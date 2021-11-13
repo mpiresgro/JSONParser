@@ -25,7 +25,22 @@ std::vector<Token> Lexer::GetTokens()
             continue;
         }
 
-    }
+        token = LexBoolean(strValue);
+        if (token.GetType() == Token::Type::Boolean)
+        {
+            tokens.push_back(token);
+            continue;
+        }
+
+        token = LexNull(strValue);
+        if (token.GetType() == Token::Type::Null)
+        {
+            tokens.push_back(token);
+            continue;
+        }
+
+
+    }   
 
     return tokens;
 }
@@ -76,7 +91,7 @@ Token Lexer::LexNumber(std::string &input)
 
     // find next not whitespace char
     std::size_t found_non_space = input.find_first_not_of(' ');
-    
+
     if (found_non_space != std::string::npos)
     {
         // remove leading whitespace
@@ -84,7 +99,7 @@ Token Lexer::LexNumber(std::string &input)
 
         std::size_t i;
 
-        for (i=0; i < input.size(); i++)
+        for (i = 0; i < input.size(); i++)
         {
             // find characters 0-9 - .
             bool isDigit = (input[i] >= 48 && input[i] <= 57);
@@ -98,6 +113,9 @@ Token Lexer::LexNumber(std::string &input)
                 break;
             }
         }
+
+        if (!number.size())
+            return Token();
 
         input.erase(0, i);
 
@@ -114,10 +132,54 @@ Token Lexer::LexNumber(std::string &input)
         }
         else
         {
-            // Integer number 
+            // Integer number
             return Token(std::stoi(number));
-        } 
-
+        }
     }
+    return Token();
+}
+
+Token Lexer::LexBoolean(std::string &input)
+{
+    // find next not whitespace char
+    std::size_t found_non_space = input.find_first_not_of(' ');
+    if (found_non_space != std::string::npos)
+    {
+        // remove leading whitespace
+        input.erase(0, found_non_space);
+
+        if (input.substr(0, 4) == "true")
+        {
+            input.erase(0, 4);
+            return Token(true);
+        }
+
+        if (input.substr(0, 5) == "false")
+        {
+            input.erase(0, 5);
+            return Token(false);
+        }
+    }
+    return Token();
+}
+
+
+
+Token Lexer::LexNull(std::string &input)
+{
+    // find next not whitespace char
+    std::size_t found_non_space = input.find_first_not_of(' ');
+    if (found_non_space != std::string::npos)
+    {
+        // remove leading whitespace
+        input.erase(0, found_non_space);
+
+        if (input.substr(0, 4) == "null")
+        {
+            input.erase(0, 4);
+            return Token(nullptr);
+        }
+    }
+
     return Token();
 }
