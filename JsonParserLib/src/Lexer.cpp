@@ -39,8 +39,17 @@ std::vector<Token> Lexer::GetTokens()
             continue;
         }
 
+        token = LexJsonSyntax(strValue);
+        if (token.GetType() != Token::Type::Invalid)
+        {
+            tokens.push_back(token);
+            continue;
+        }
 
-    }   
+        if (token.GetType() == Token::Type::Invalid)
+            // TODO: Define a custom exception
+            throw std::invalid_argument("Unexpected character!");
+    }
 
     return tokens;
 }
@@ -56,14 +65,14 @@ return the string within the quotes and the rest of the unchecked input string.
 Token Lexer::LexString(std::string &input)
 {
 
-    if (input[0] != '"')
+    if (input[0] != QUOTE)
         return Token();
 
     // remove first quote mark
     input.erase(0, 1);
 
     // find next quote mark
-    std::size_t found = input.find_first_of('"');
+    std::size_t found = input.find_first_of(QUOTE);
 
     if (found != input.npos)
     {
@@ -99,6 +108,7 @@ Token Lexer::LexNumber(std::string &input)
 
         std::size_t i;
 
+        // TODO: change to find_last_not_of
         for (i = 0; i < input.size(); i++)
         {
             // find characters 0-9 - .
@@ -163,8 +173,6 @@ Token Lexer::LexBoolean(std::string &input)
     return Token();
 }
 
-
-
 Token Lexer::LexNull(std::string &input)
 {
     // find next not whitespace char
@@ -182,4 +190,39 @@ Token Lexer::LexNull(std::string &input)
     }
 
     return Token();
+}
+
+Token Lexer::LexJsonSyntax(std::string &input)
+{
+    Token token; 
+    switch (input[0])
+    {
+    case LEFT_BRACKET:
+        token = Token(Token::Type::LeftBracket); 
+		break;
+    case RIGHT_BRACKET:
+        token = Token(Token::Type::RightBracket); 
+		break;
+    case LEFT_BRACE:
+        token = Token(Token::Type::LeftBrace); 
+		break;
+    case RIGHT_BRACE:
+        token = Token(Token::Type::RightBrace); 
+		break;
+    case COMMA:
+        token = Token(Token::Type::Comma); 
+		break;
+    case COLON:
+        token = Token(Token::Type::Colon); 
+		break;
+    default:
+        token = Token(); 
+		break; 
+    }
+
+    if (token.GetType() != Token::Type::Invalid)
+        input.erase(0, 1);
+
+    return token;
+    
 }
