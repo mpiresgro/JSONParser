@@ -11,6 +11,19 @@ std::vector<Token> Lexer::GetTokens()
     while (strValue.size() != 0)
     {
 
+        // find next not whitespace char
+        std::size_t found_non_space = strValue.find_first_not_of(' ');
+
+        if (found_non_space != std::string::npos)
+        {
+            // remove leading whitespace
+            strValue.erase(0, found_non_space);
+        }
+        else 
+        { 
+            break;
+        }
+
         token = LexString(strValue);
         if (token.GetType() == Token::Type::String)
         {
@@ -194,35 +207,34 @@ Token Lexer::LexNull(std::string &input)
 
 Token Lexer::LexJsonSyntax(std::string &input)
 {
-    Token token; 
+    Token token;
     switch (input[0])
     {
     case LEFT_BRACKET:
-        token = Token(Token::Type::LeftBracket); 
-		break;
+        token = Token(Token::Type::LeftBracket);
+        break;
     case RIGHT_BRACKET:
-        token = Token(Token::Type::RightBracket); 
-		break;
+        token = Token(Token::Type::RightBracket);
+        break;
     case LEFT_BRACE:
-        token = Token(Token::Type::LeftBrace); 
-		break;
+        token = Token(Token::Type::LeftBrace);
+        break;
     case RIGHT_BRACE:
-        token = Token(Token::Type::RightBrace); 
-		break;
+        token = Token(Token::Type::RightBrace);
+        break;
     case COMMA:
-        token = Token(Token::Type::Comma); 
-		break;
+        token = Token(Token::Type::Comma);
+        break;
     case COLON:
-        token = Token(Token::Type::Colon); 
-		break;
+        token = Token(Token::Type::Colon);
+        break;
     default:
-        token = Token(); 
-		break; 
+        token = Token();
+        break;
     }
 
     if (token.GetType() != Token::Type::Invalid)
         input.erase(0, 1);
 
     return token;
-    
 }
