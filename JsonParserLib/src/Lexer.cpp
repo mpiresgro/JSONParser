@@ -10,7 +10,7 @@ std::vector<Token> Lexer::GetTokens()
     {
 
         // find next not whitespace char
-        std::size_t found_non_space = strValue.find_first_not_of(' ');
+        std::size_t found_non_space = strValue.find_first_not_of(SPACE);
 
         if (found_non_space != std::string::npos)
         {
@@ -127,13 +127,13 @@ bool Lexer::LexNumber(std::string &input, Token &token)
 
     input.erase(0, i);
 
-    std::size_t end = input.find_first_not_of(' ');
+    std::size_t end = input.find_first_not_of(SPACE);
     if (end != std::string::npos)
         input.erase(0, end);
 
-    std::size_t found_dot = number.find_first_of('.');
+    std::size_t found_float_point = number.find_first_of(POINT);
 
-    if (found_dot != std::string::npos)
+    if (found_float_point != std::string::npos)
     {
         // Floating point number
         token = Token(std::stod(number));

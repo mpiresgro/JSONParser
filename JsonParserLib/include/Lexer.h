@@ -13,6 +13,8 @@ const char LEFT_BRACKET = '[';
 const char RIGHT_BRACKET = ']';
 const char LEFT_BRACE = '{';
 const char RIGHT_BRACE = '}';
+const char SPACE = ' ';
+const char POINT = '.';
 // -----------------------------------
 
 class Lexer
