@@ -26,9 +26,9 @@ public:
 private:
     std::string strValue;
 
-    Token LexString(std::string &input);
-    Token LexNumber(std::string &input);
-    Token LexBoolean(std::string &input);
-    Token LexNull(std::string &input);
-    Token LexJsonSyntax(std::string &input);
+    bool LexString(std::string &input, Token& token);
+    bool LexNumber(std::string &input, Token& token);
+    bool LexBoolean(std::string &input, Token& token);
+    bool LexNull(std::string &input, Token& token);
+    bool LexJsonSyntax(std::string &input, Token& token);
 };
