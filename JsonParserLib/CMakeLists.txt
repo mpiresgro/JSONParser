@@ -11,6 +11,7 @@ set(SOURCES
     src/main.cpp
     src/Parser.cpp
     src/Lexer.cpp
+    src/Token.cpp
 )
 
 add_library( JsonParserLib ${SOURCES} )

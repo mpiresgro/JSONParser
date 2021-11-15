@@ -6,49 +6,56 @@ std::vector<Token> Lexer::GetTokens()
 {
     std::vector<Token> tokens = {};
 
-    Token token;
-
     while (strValue.size() != 0)
     {
 
-        token = LexString(strValue);
-        if (token.GetType() == Token::Type::String)
+        // find next not whitespace char
+        std::size_t found_non_space = strValue.find_first_not_of(SPACE);
+
+        if (found_non_space != std::string::npos)
+        {
+            // remove leading whitespace
+            strValue.erase(0, found_non_space);
+        }
+        else
+        {
+            break;
+        }
+
+        Token token;
+
+        if (LexString(strValue, token))
         {
             tokens.push_back(token);
             continue;
         }
 
-        token = LexNumber(strValue);
-        if (token.GetType() == Token::Type::Integer || token.GetType() == Token::Type::Double)
+        if (LexNumber(strValue, token))
         {
             tokens.push_back(token);
             continue;
         }
 
-        token = LexBoolean(strValue);
-        if (token.GetType() == Token::Type::Boolean)
+        if (LexBoolean(strValue, token))
         {
             tokens.push_back(token);
             continue;
         }
 
-        token = LexNull(strValue);
-        if (token.GetType() == Token::Type::Null)
+        if (LexNull(strValue, token))
         {
             tokens.push_back(token);
             continue;
         }
 
-        token = LexJsonSyntax(strValue);
-        if (token.GetType() != Token::Type::Invalid)
+        if (LexJsonSyntax(strValue, token))
         {
             tokens.push_back(token);
             continue;
         }
 
-        if (token.GetType() == Token::Type::Invalid)
-            // TODO: Define a custom exception
-            throw std::invalid_argument("Unexpected character!");
+        // Should not get here!
+        throw std::invalid_argument("Unexpected character!");
     }
 
     return tokens;
@@ -62,11 +69,11 @@ If you don't find an initial quote, return None and the original list.
 If you find an initial quote and an ending quote, 
 return the string within the quotes and the rest of the unchecked input string.
 */
-Token Lexer::LexString(std::string &input)
+bool Lexer::LexString(std::string &input, Token &token)
 {
 
     if (input[0] != QUOTE)
-        return Token();
+        return false;
 
     // remove first quote mark
     input.erase(0, 1);
@@ -77,9 +84,9 @@ Token Lexer::LexString(std::string &input)
     if (found != input.npos)
     {
         // get string within the quotes and remove string from input
-        Token token(input.substr(0, found));
+        token = Token(input.substr(0, found));
         input.erase(0, found + 1);
-        return token;
+        return true;
     }
     else
     {
@@ -94,135 +101,118 @@ part of a number, either return a float or int if the characters
 you've accumulated number more than 0. 
 Otherwise return None and the original string input.
 */
-Token Lexer::LexNumber(std::string &input)
+bool Lexer::LexNumber(std::string &input, Token &token)
 {
     std::string number;
+    std::size_t i;
 
-    // find next not whitespace char
-    std::size_t found_non_space = input.find_first_not_of(' ');
-
-    if (found_non_space != std::string::npos)
+    // TODO: change to find_last_not_of
+    for (i = 0; i < input.size(); i++)
     {
-        // remove leading whitespace
-        input.erase(0, found_non_space);
-
-        std::size_t i;
-
-        // TODO: change to find_last_not_of
-        for (i = 0; i < input.size(); i++)
+        // find characters 0-9 - .
+        bool isDigit = (input[i] >= 48 && input[i] <= 57);
+        bool isSign = (input[i] == '.' || input[i] == '-');
+        if (isDigit || isSign)
         {
-            // find characters 0-9 - .
-            bool isDigit = (input[i] >= 48 && input[i] <= 57);
-            bool isSign = (input[i] == '.' || input[i] == '-');
-            if (isDigit || isSign)
-            {
-                number.push_back(input[i]);
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        if (!number.size())
-            return Token();
-
-        input.erase(0, i);
-
-        std::size_t end = input.find_first_not_of(' ');
-        if (end != std::string::npos)
-            input.erase(0, end);
-
-        std::size_t found_dot = number.find_first_of('.');
-
-        if (found_dot != std::string::npos)
-        {
-            // Floating point number
-            return Token(std::stod(number));
+            number.push_back(input[i]);
         }
         else
         {
-            // Integer number
-            return Token(std::stoi(number));
+            break;
         }
     }
-    return Token();
-}
 
-Token Lexer::LexBoolean(std::string &input)
-{
-    // find next not whitespace char
-    std::size_t found_non_space = input.find_first_not_of(' ');
-    if (found_non_space != std::string::npos)
+    if (!number.size())
+        return false;
+
+    input.erase(0, i);
+
+    std::size_t end = input.find_first_not_of(SPACE);
+    if (end != std::string::npos)
+        input.erase(0, end);
+
+    std::size_t found_float_point = number.find_first_of(POINT);
+
+    if (found_float_point != std::string::npos)
     {
-        // remove leading whitespace
-        input.erase(0, found_non_space);
-
-        if (input.substr(0, 4) == "true")
-        {
-            input.erase(0, 4);
-            return Token(true);
-        }
-
-        if (input.substr(0, 5) == "false")
-        {
-            input.erase(0, 5);
-            return Token(false);
-        }
+        // Floating point number
+        token = Token(std::stod(number));
     }
-    return Token();
-}
-
-Token Lexer::LexNull(std::string &input)
-{
-    // find next not whitespace char
-    std::size_t found_non_space = input.find_first_not_of(' ');
-    if (found_non_space != std::string::npos)
+    else
     {
-        // remove leading whitespace
-        input.erase(0, found_non_space);
-
-        if (input.substr(0, 4) == "null")
-        {
-            input.erase(0, 4);
-            return Token(nullptr);
-        }
+        // Integer number
+        token = Token(std::stoi(number));
     }
 
-    return Token();
+    return true;
 }
 
-Token Lexer::LexJsonSyntax(std::string &input)
+bool Lexer::LexBoolean(std::string &input, Token &token)
 {
-    Token token; 
+
+    if (input.substr(0, 4) == "true")
+    {
+        input.erase(0, 4);
+        token = Token(true);
+        return true;
+    }
+    else if (input.substr(0, 5) == "false")
+    {
+        input.erase(0, 5);
+        token = Token(false);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool Lexer::LexNull(std::string &input, Token &token)
+{
+
+    if (input.substr(0, 4) == "null")
+    {
+        input.erase(0, 4);
+        token = Token(nullptr);
+        return true;
+    }
+
+    return false;
+}
+
+bool Lexer::LexJsonSyntax(std::string &input, Token &token)
+{
     switch (input[0])
     {
     case LEFT_BRACKET:
-        token = Token(Token::Type::LeftBracket); 
-		break;
+        token = Token(Token::Type::LeftBracket);
+        break;
     case RIGHT_BRACKET:
-        token = Token(Token::Type::RightBracket); 
-		break;
+        token = Token(Token::Type::RightBracket);
+        break;
     case LEFT_BRACE:
-        token = Token(Token::Type::LeftBrace); 
-		break;
+        token = Token(Token::Type::LeftBrace);
+        break;
     case RIGHT_BRACE:
-        token = Token(Token::Type::RightBrace); 
-		break;
+        token = Token(Token::Type::RightBrace);
+        break;
     case COMMA:
-        token = Token(Token::Type::Comma); 
-		break;
+        token = Token(Token::Type::Comma);
+        break;
     case COLON:
-        token = Token(Token::Type::Colon); 
-		break;
+        token = Token(Token::Type::Colon);
+        break;
     default:
-        token = Token(); 
-		break; 
+        token = Token();
+        break;
     }
 
     if (token.GetType() != Token::Type::Invalid)
+    {
         input.erase(0, 1);
+        return true;
+    }
 
-    return token;
-    
+    return false;
 }
