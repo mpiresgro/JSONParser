@@ -19,8 +19,8 @@ std::vector<Token> Lexer::GetTokens()
             // remove leading whitespace
             strValue.erase(0, found_non_space);
         }
-        else 
-        { 
+        else
+        {
             break;
         }
 
@@ -111,95 +111,74 @@ Token Lexer::LexNumber(std::string &input)
 {
     std::string number;
 
-    // find next not whitespace char
-    std::size_t found_non_space = input.find_first_not_of(' ');
+    std::size_t i;
 
-    if (found_non_space != std::string::npos)
+    // TODO: change to find_last_not_of
+    for (i = 0; i < input.size(); i++)
     {
-        // remove leading whitespace
-        input.erase(0, found_non_space);
-
-        std::size_t i;
-
-        // TODO: change to find_last_not_of
-        for (i = 0; i < input.size(); i++)
+        // find characters 0-9 - .
+        bool isDigit = (input[i] >= 48 && input[i] <= 57);
+        bool isSign = (input[i] == '.' || input[i] == '-');
+        if (isDigit || isSign)
         {
-            // find characters 0-9 - .
-            bool isDigit = (input[i] >= 48 && input[i] <= 57);
-            bool isSign = (input[i] == '.' || input[i] == '-');
-            if (isDigit || isSign)
-            {
-                number.push_back(input[i]);
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        if (!number.size())
-            return Token();
-
-        input.erase(0, i);
-
-        std::size_t end = input.find_first_not_of(' ');
-        if (end != std::string::npos)
-            input.erase(0, end);
-
-        std::size_t found_dot = number.find_first_of('.');
-
-        if (found_dot != std::string::npos)
-        {
-            // Floating point number
-            return Token(std::stod(number));
+            number.push_back(input[i]);
         }
         else
         {
-            // Integer number
-            return Token(std::stoi(number));
+            break;
         }
     }
+
+    if (!number.size())
+        return Token();
+
+    input.erase(0, i);
+
+    std::size_t end = input.find_first_not_of(' ');
+    if (end != std::string::npos)
+        input.erase(0, end);
+
+    std::size_t found_dot = number.find_first_of('.');
+
+    if (found_dot != std::string::npos)
+    {
+        // Floating point number
+        return Token(std::stod(number));
+    }
+    else
+    {
+        // Integer number
+        return Token(std::stoi(number));
+    }
+
     return Token();
 }
 
 Token Lexer::LexBoolean(std::string &input)
 {
-    // find next not whitespace char
-    std::size_t found_non_space = input.find_first_not_of(' ');
-    if (found_non_space != std::string::npos)
+
+    if (input.substr(0, 4) == "true")
     {
-        // remove leading whitespace
-        input.erase(0, found_non_space);
-
-        if (input.substr(0, 4) == "true")
-        {
-            input.erase(0, 4);
-            return Token(true);
-        }
-
-        if (input.substr(0, 5) == "false")
-        {
-            input.erase(0, 5);
-            return Token(false);
-        }
+        input.erase(0, 4);
+        return Token(true);
     }
+
+    if (input.substr(0, 5) == "false")
+    {
+        input.erase(0, 5);
+        return Token(false);
+    }
+
     return Token();
 }
 
 Token Lexer::LexNull(std::string &input)
 {
-    // find next not whitespace char
-    std::size_t found_non_space = input.find_first_not_of(' ');
-    if (found_non_space != std::string::npos)
-    {
-        // remove leading whitespace
-        input.erase(0, found_non_space);
 
-        if (input.substr(0, 4) == "null")
-        {
-            input.erase(0, 4);
-            return Token(nullptr);
-        }
+    if (input.substr(0, 4) == "null")
+    {
+        input.erase(0, 4);
+        return Token(nullptr);
     }
 
     return Token();
