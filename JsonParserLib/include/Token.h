@@ -23,8 +23,8 @@ public:
     };
 
     Token() : type(Type::Invalid){};
-    Token(const char *Value) : StringValue(std::string(Value)), type(Type::String){};
-    Token(std::string Value) : StringValue(Value), type(Type::String){};
+    Token(const char *Value) : StringValue(new std::string(Value)), type(Type::String){};
+    Token(std::string Value) : StringValue(new std::string(Value)), type(Type::String){};
     Token(int Value) : IntegerValue(Value), type(Type::Integer){};
     Token(double Value) : DoubleValue(Value), type(Type::Double){};
     Token(bool Value) : BooleanValue(Value), type(Type::Boolean){};
@@ -32,15 +32,20 @@ public:
 
     Token(Type Type_) : type(Type_){};
 
+    ~Token() noexcept = default;
+
     Type GetType() const { return type; }
 
     bool operator==(const Token &other) const;
 
 private:
-    std::string StringValue;
-    int IntegerValue;
-    double DoubleValue;
-    bool BooleanValue;
+
+    union{
+        std::string* StringValue;
+        int IntegerValue;
+        double DoubleValue;
+        bool BooleanValue;
+    };
 
     Type type;
 };

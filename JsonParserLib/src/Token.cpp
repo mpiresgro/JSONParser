@@ -13,7 +13,7 @@ bool Token::operator==(const Token &other) const
             case Type::Null:
                 return true;
             case Type::String:
-                return StringValue == other.StringValue;
+                return *StringValue == *other.StringValue;
             case Type::Integer:
                 return IntegerValue == other.IntegerValue;
             case Type::Double:
