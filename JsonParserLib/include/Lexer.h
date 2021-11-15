@@ -3,6 +3,8 @@
 #include <vector>
 #include "Token.h"
 
+typedef std::vector<Token> Tokens; 
+
 // -----------------------------------
 // Constants
 const char Invalid = 0;
@@ -23,7 +25,7 @@ public:
     Lexer(const std::string &input);
     ~Lexer() = default;
 
-    std::vector<Token> GetTokens();
+    Tokens GetTokens();
 
 private:
     std::string strValue;
