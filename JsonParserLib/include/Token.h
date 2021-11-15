@@ -14,12 +14,12 @@ public:
         Boolean,
         Null,
         // Syntax
-        Comma, 
-        Colon, 
-        LeftBracket, 
-        RightBracket, 
-        LeftBrace, 
-        RightBrace, 
+        Comma,          // , 
+        Colon,          // : 
+        LeftBracket,    // [
+        RightBracket,   // ]
+        LeftBrace,      // {
+        RightBrace,     // }
     };
 
     Token() : type(Type::Invalid){};
